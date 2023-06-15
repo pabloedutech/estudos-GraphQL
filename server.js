@@ -1,0 +1,56 @@
+const { ApolloServer, gql } = require('apollo-server');
+const axios = require('axios');
+
+// Definindo o schema do GraphQL
+const typeDefs = gql`
+  type Repository {
+    id: ID!
+    name: String!
+    description: String
+    url: String!
+  }
+
+  type Query {
+    repositories: [Repository]
+  }
+`;
+
+// Definindo os resolvers
+const resolvers = {
+  Query: {
+    repositories: async () => {
+      try {
+        // Faz uma requisição à API do GitHub para buscar repositórios no Brasil
+        const response = await axios.get(
+          'https://api.github.com/search/repositories',
+          {
+            params: {
+              q: 'language:javascript location:brazil',
+            },
+          }
+        );
+        
+        // Mapeia os dados da resposta para retornar apenas as informações necessárias
+        const repositories = response.data.items.map((repo) => ({
+          id: repo.id,
+          name: repo.name,
+          description: repo.description,
+          url: repo.html_url,
+        }));
+        
+        return repositories;
+      } catch (error) {
+        console.error('Erro ao buscar repositórios:', error);
+        return [];
+      }
+    },
+  },
+};
+
+// Criando uma instância do servidor Apollo
+const server = new ApolloServer({ typeDefs, resolvers });
+
+// Iniciando o servidor
+server.listen().then(({ url }) => {
+  console.log(`Servidor GraphQL iniciado em ${url}`);
+});
