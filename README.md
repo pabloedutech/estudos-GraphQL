@@ -76,3 +76,18 @@ server.listen().then(({ url }) => {
 });
 
 ```
+
+
+### Execute a seguinte consulta GraphQL para buscar os repositórios na API do GitHub:
+
+```
+query {
+  repositories {
+    id
+    name
+    description
+    url
+  }
+}
+
+```
